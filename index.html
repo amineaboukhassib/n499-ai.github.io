@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Schools CRM v2.5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand">
+      <img src="https://iili.io/3Krn5y7.png" class="logo" alt="logo">
+      <span>Schools CRM</span>
+      <span class="tag"><span class="dot green"></span>v2.5</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="row">
+      <select id="langSwitch">
+        <option value="ar">العربية</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+      <span id="userBadge" class="tag"></span>
+      <button id="btnLogout" class="btn quiet">خروج</button>
+    </div>
+  </header>
+
+  <nav id="tabs" class="tabs"></nav>
+
+  <main id="main">
+    <section id="dashboard" class="">
+      <div class="grid3">
+        <div class="card"><div class="kpi"><div class="kpi-label" id="kpiSchoolsLabel">عدد المدارس</div><div class="kpi-value" id="kpiSchools">0</div></div></div>
+        <div class="card"><div class="kpi"><div class="kpi-label" id="kpiAgreedLabel">تم الاتفاق</div><div class="kpi-value" id="kpiAgreed">0</div></div></div>
+        <div class="card"><div class="kpi"><div class="kpi-label" id="kpiAvgRelLabel">متوسط التوافق</div><div class="kpi-value" id="kpiAvgRel">0</div></div></div>
+      </div>
+      <div class="card">
+        <div class="toolbar"><b>مؤشرات Pipeline</b></div>
+        <div id="pipeIndicators" class="row wrap"></div>
+      </div>
+    </section>
+
+    <section id="schools" class="hidden">
+      <div class="card">
+        <div class="toolbar">
+          <input id="schoolSearch" placeholder="فلترة ذكية: name:مدرسة city:الرياض stage:follow rel>=3">
+          <select id="filterType" style="width:160px"></select>
+          <select id="filterPipeline" style="width:220px"></select>
+          <button id="btnAddSchool" class="btn primary">+ مدرسة</button>
+        </div>
+        <table id="schoolsTable"></table>
+      </div>
+    </section>
+
+    <section id="visits" class="hidden">
+      <div class="card">
+        <div class="toolbar">
+          <select id="visitSchoolFilter" style="min-width:240px"></select>
+          <input id="visitMonthFilter" type="month">
+          <select id="visitStatusFilter" style="width:200px"></select>
+          <button id="btnAddVisit" class="btn primary">+ زيارة</button>
+        </div>
+        <table id="visitsTable"></table>
+      </div>
+    </section>
+
+    <section id="communication" class="hidden">
+      <div class="card">
+        <div class="toolbar">
+          <input id="commSchoolInput" list="schoolsList" placeholder="">
+          <select id="commStageFilter" style="width:220px"></select>
+          <datalist id="schoolsList"></datalist>
+          <button class="btn" id="btnCommPrev">◀</button>
+          <button class="btn primary" id="btnCommAdvance">Next</button>
+          <button class="btn warn" id="btnSkipAgreed">Skip to Agreed</button>
+          <div class="row" style="margin-inline-start:auto">
+            <span class="small muted" id="commStageLabel"></span>
+          </div>
+        </div>
+        <div class="card" style="background:transparent;border:none">
+          <div id="timelineBar" class="timeline"></div>
+        </div>
+        <div class="card" id="currentStageNoteCard" style="display:none">
+          <h3 style="margin:0 0 8px" id="currentStageNoteTitle">ملاحظات المرحلة الحالية</h3>
+          <div id="currentStageNote"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reports" class="hidden">
+      <div class="card">
+        <h3 id="repTitle1">نظرة عامة</h3>
+        <div id="reportsOverview"></div>
+      </div>
+      <div class="card">
+        <h3 id="repTitle2">متوسط الأيام للوصول لكل مرحلة</h3>
+        <div id="reportsTimes"></div>
+      </div>
+    </section>
+
+    <section id="settings" class="hidden">
+      <div class="card">
+        <div class="toolbar"><b>إعدادات</b></div>
+        <div class="row wrap">
+          <button id="btnBackup" class="btn">نسخ احتياطي (JSON)</button>
+          <label class="btn">استعادة <input id="restoreInput" type="file" accept="application/json" hidden></label>
+          <button id="btnFactory" class="btn danger">إعادة ضبط</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Dialogs -->
+  <dialog id="dlgSchool" class="dlg">
+    <div class="card" style="margin:0">
+      <div class="dlg-head"><div class="row"><img src="https://iili.io/3Krn5y7.png" class="logo"><b id="dlgSchoolTitle">إضافة مدرسة</b></div><button class="btn" id="btnDlgCloseSchool">×</button></div>
+      <form id="formSchool" class="grid">
+        <input type="hidden" name="id">
+        <div><label id="lblName">المدرسة</label><input name="name" required></div>
+        <div><label id="lblType">النوع</label><select name="type" id="selType"></select></div>
+        <div><label id="lblCity">المدينة</label><input name="city"></div>
+        <div><label id="lblAvg">متوسط الرسوم</label><input name="avgTuition" type="number" min="0"></div>
+        <div><label id="lblAddress">العنوان</label><input name="address"></div>
+        <div><label id="lblPhone">الهاتف</label><input name="phone"></div>
+        <div><label id="lblTags">وسوم</label><input name="tags" placeholder="stem,robot,arts"></div>
+        <div><label id="lblPipeline">المرحلة</label><select name="pipeline" id="selPipeline"></select></div>
+        <div><label id="lblRelation">التوافق (1..5)</label><input name="relationship" type="number" min="1" max="5" value="3"></div>
+        <div style="grid-column:1/3"><label id="lblNotes">ملاحظات</label><textarea name="notes" rows="3"></textarea></div>
+        <div class="actions" style="grid-column:1/3">
+          <button type="button" class="btn" id="btnDlgCancelSchool">إلغاء</button>
+          <button type="submit" class="btn primary" id="btnDlgSaveSchool">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="dlgVisit" class="dlg">
+    <div class="card" style="margin:0">
+      <div class="dlg-head"><b id="dlgVisitTitle">إضافة زيارة</b><button class="btn" id="btnDlgCloseVisit">×</button></div>
+      <form id="formVisit" class="grid">
+        <input type="hidden" name="id">
+        <div><label>المدرسة</label><select name="schoolId" id="visitSchool"></select></div>
+        <div><label>التاريخ</label><input name="date" type="date"></div>
+        <div><label>الغرض</label><input name="purpose"></div>
+        <div><label id="lblVisitStatus">حالة الزيارة</label><select name="status" id="visitStatus"></select></div>
+        <div style="grid-column:1/3"><label>ملاحظات</label><textarea name="notes" rows="3"></textarea></div>
+        <div class="actions" style="grid-column:1/3">
+          <button type="button" class="btn" id="btnDlgCancelVisit">إلغاء</button>
+          <button type="submit" class="btn primary" id="btnDlgSaveVisit">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="dlgStageNote" class="dlg">
+    <div class="card" style="margin:0">
+      <div class="dlg-head"><b id="dlgStageNoteTitle">تفاصيل تغيير المرحلة</b><button class="btn" id="btnDlgCloseStage">×</button></div>
+      <form id="formStageNote" class="grid" style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+        <input type="hidden" name="schoolId">
+        <input type="hidden" name="stage">
+        <div style="grid-column:1/3"><label id="lblStageNote">ملاحظات</label><textarea name="note" rows="3"></textarea></div>
+        <div style="grid-column:1/3">
+          <label id="lblStageFiles">مرفقات</label>
+          <input type="file" id="stageFiles" name="files" multiple accept="image/*,application/pdf">
+          <div id="filePreview" class="row small muted"></div>
+        </div>
+        <div style="grid-column:1/3" class="actions">
+          <button class="btn" type="button" id="btnDlgCancelStage">إلغاء</button>
+          <button class="btn primary" type="submit" id="btnDlgSaveStage">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="dlgVisitStatus" class="dlg">
+    <div class="card" style="margin:0">
+      <div class="dlg-head"><b id="dlgVisitStatusTitle">تفاصيل تغيير حالة الزيارة</b><button class="btn" id="btnDlgCloseVisitStatus">×</button></div>
+      <form id="formVisitStatus" class="grid" style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+        <input type="hidden" name="visitId">
+        <input type="hidden" name="newStatus">
+        <div style="grid-column:1/3"><label id="lblVisitStatusNote">ملاحظات</label><textarea name="note" rows="3"></textarea></div>
+        <div style="grid-column:1/3">
+          <label id="lblVisitStatusFiles">مرفقات</label>
+          <input type="file" id="visitStatusFiles" name="files" multiple accept="image/*,application/pdf">
+          <div id="visitFilePreview" class="row small muted"></div>
+        </div>
+        <div style="grid-column:1/3" class="actions">
+          <button class="btn" type="button" id="btnDlgCancelVisitStatus">إلغاء</button>
+          <button class="btn primary" type="submit" id="btnDlgSaveVisitStatus">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <div id="loginOverlay" class="overlay">
+    <div class="login card">
+      <img src="https://iili.io/3Krn5y7.png" class="logo" style="height:60px">
+      <h3 id="loginTitle">تسجيل الدخول</h3>
+      <div class="grid">
+        <div><label>البريد</label><input id="loginEmail" type="email" placeholder="you@example.com"></div>
+        <div><label>كلمة السر</label><input id="loginPass" type="password" placeholder="••••••••"></div>
+</div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button id="btnLogin" class="btn primary">دخول</button></div>
+      <div class="row" style="justify-content:space-between;width:100%"><button id="btnResetSession" class="btn quiet small">مسح الجلسة / Reset session</button></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
